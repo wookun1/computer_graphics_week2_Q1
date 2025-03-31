@@ -1,4 +1,4 @@
-// q1_phong_shading/main.cpp
+// q2_gamma_correction/main.cpp
 #include <Windows.h>
 #include <iostream>
 #include <GL/glew.h>
@@ -16,7 +16,6 @@
 #include <glm/gtx/string_cast.hpp>
 using namespace glm;
 
-// Material structure
 struct Material {
     vec3 ka, kd, ks;
     float specPower;
@@ -151,6 +150,13 @@ int Width = 512, Height = 512;
 std::vector<float> OutputImage;
 Camera* camera = nullptr;
 Scene* scene = nullptr;
+const float gammaValue = 2.2f;
+
+vec3 applyGammaCorrection(const vec3& color) {
+    return vec3(pow(color.r, 1.0f / gammaValue),
+        pow(color.g, 1.0f / gammaValue),
+        pow(color.b, 1.0f / gammaValue));
+}
 
 void render() {
     OutputImage.resize(Width * Height * 3);
@@ -158,6 +164,7 @@ void render() {
         for (int i = 0; i < Width; ++i) {
             Ray ray = camera->generateRay(i, j, Width, Height);
             vec3 color = scene->trace(ray);
+            color = applyGammaCorrection(color);
             int idx = (j * Width + i) * 3;
             OutputImage[idx + 0] = color.r;
             OutputImage[idx + 1] = color.g;
@@ -180,7 +187,7 @@ void resize_callback(GLFWwindow*, int nw, int nh) {
 int main(int argc, char* argv[]) {
     GLFWwindow* window;
     if (!glfwInit()) return -1;
-    window = glfwCreateWindow(Width, Height, "Q1: Phong Shading", NULL, NULL);
+    window = glfwCreateWindow(Width, Height, "Q2: Gamma Correction", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
     glfwMakeContextCurrent(window);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
