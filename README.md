@@ -1,22 +1,31 @@
+![image](https://github.com/user-attachments/assets/b2056d9b-6652-41c3-9e0e-c671a2833d27)
 
-![image](https://github.com/user-attachments/assets/01545c0e-b058-48a2-82fb-a6726b43a72a)
 
-# 과제 2 - Q2: 감마 보정 (Gamma Correction)
-
- 목표
-렌더링된 장면에 감마 보정(Gamma Correction, γ = 2.2)을 적용하여  
-화면상에 더 자연스럽고 사실적인 색상과 밝기를 표현합니다.
+기본 Ray Tracer를 기반으로, **Phong 조명 모델**과 **그림자(shadow)**를 적용하여  
+사실적인 입체감과 광원 반응을 구현합니다.
 
 ---
 
- 구현 내용
+ 구성 요소 요약
 
-- `Phong Shading` 결과에 대해 감마 보정 적용
-- 감마 보정 공식:
+- **광원 (Light Source)**
+  - 위치: `(-4, 4, -3)`
+  - 단일 흰색 포인트 라이트 (감쇠 없음)
 
-  ```cpp
-  vec3 applyGammaCorrection(const vec3& color) {
-      return vec3(pow(color.r, 1.0 / 2.2),
-                  pow(color.g, 1.0 / 2.2),
-                  pow(color.b, 1.0 / 2.2));
-  }
+- **재질 (Material)**
+  - 각 오브젝트별로 `ka`, `kd`, `ks`, `specular power` 값이 다르게 설정됨
+  - 예: Sphere S2는 `specular` 반사를 가짐 (`ks ≠ 0`, `power = 32`)
+
+- **Phong Lighting 구성**
+  - `Ambient`: 주변광 (항상 존재)
+  - `Diffuse`: 입사광과 표면 노멀의 각도에 따른 확산광
+  - `Specular`: 반사광 (하이라이트)
+
+---
+
+ 조명 계산 방식
+
+각 픽셀마다 광선(ray)을 쏴서 물체에 닿는 경우:
+
+```cpp
+color = ka + kd * max(N·L, 0) + ks * pow(max(N·H, 0), specular_power);
